@@ -15,6 +15,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+builder.Services.AddDbContext<ESCORIALContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("EscorialPostgreSql")));
+
+
 var context = new ESCORIALContext();
 
 app.MapGet("api/pallets", async (string? numero) =>
