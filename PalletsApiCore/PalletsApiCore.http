@@ -1,0 +1,6 @@
+@PalletsApiCore_HostAddress = http://localhost:5047
+
+GET {{PalletsApiCore_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
