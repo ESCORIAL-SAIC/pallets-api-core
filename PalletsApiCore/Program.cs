@@ -25,11 +25,30 @@ app.MapGet("/", () => "Hello World!");
 
 app.MapPost("/api/login", async (LoginDto login, ESCORIALContext context) =>
 {
-    var user = await context.ud_empleado
-        .FirstOrDefaultAsync(u => u.usuario_sistema == login.User && u.password == login.Password);
+    var user = await context.empleado
+        .Join(context.ud_empleado,
+            e => e.boextension_id,
+            u => u.id,
+            (e, u) => new { e, u })
+        .Join(context.v_persona,
+            eu => eu.e.enteasociado_id,
+            p => p.id,
+            (eu, p) => new { eu.e, eu.u, p })
+        .Where(x =>
+            x.u.usuario_sistema != "" &&
+            x.e.activestatus == 0 &&
+            x.u.usuario_sistema == login.User &&
+            x.u.password == login.Password)
+        .Select(x => new
+        {
+            x.p.id,
+            x.u.usuario_sistema,
+            x.p.nombre
+        })
+        .FirstOrDefaultAsync();
     if (user is null)
         return Results.NotFound();
-    return Results.Ok();
+    return Results.Ok(user);
 })
 .WithName("login")
 .WithOpenApi();

@@ -31,6 +31,10 @@ public partial class ESCORIALContext : DbContext
 
     public virtual DbSet<ud_empleado> ud_empleado { get; set; }
 
+    public virtual DbSet<empleado> empleado { get; set; }
+
+    public virtual DbSet<v_persona> v_persona { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -86,6 +90,12 @@ public partial class ESCORIALContext : DbContext
             entity.Property(e => e.id).ValueGeneratedNever();
         });
 
+        modelBuilder.Entity<empleado>(entity =>
+        {
+            entity.HasKey(e => e.id).HasName("empleado_pkey");
+            entity.Property(e => e.id).ValueGeneratedNever();
+        });
+
         modelBuilder.Entity<producto>(entity =>
         {
             entity.HasKey(e => e.id).HasName("producto_pkey");
@@ -128,6 +138,12 @@ public partial class ESCORIALContext : DbContext
         {
             entity.ToView("vp_etiquetas");
         });
+
+        modelBuilder.Entity<vp_etiquetas>(entity =>
+        {
+            entity.ToView("v_persona");
+        });
+
         modelBuilder.HasSequence("aux_suceso_inc_seq");
         modelBuilder.HasSequence("hibernate_sequence", "web");
 
