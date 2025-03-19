@@ -29,6 +29,8 @@ public partial class ESCORIALContext : DbContext
 
     public virtual DbSet<vp_etiquetas> vp_etiquetas { get; set; }
 
+    public virtual DbSet<ud_empleado> ud_empleado { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -76,6 +78,12 @@ public partial class ESCORIALContext : DbContext
             entity.Property(e => e.paso_lector_manual).HasDefaultValue(false);
             entity.Property(e => e.reprocesado).HasDefaultValue(false);
             entity.Property(e => e.transfer_disabled).HasDefaultValue(false);
+        });
+
+        modelBuilder.Entity<ud_empleado>(entity =>
+        {
+            entity.HasKey(e => e.id).HasName("ud_empleado_pkey");
+            entity.Property(e => e.id).ValueGeneratedNever();
         });
 
         modelBuilder.Entity<producto>(entity =>

@@ -2,10 +2,16 @@ using Microsoft.EntityFrameworkCore;
 using PalletsApiCore;
 using PalletsApiCore.Models;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder();
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddDbContext<ESCORIALContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("EscorialPostgreSql")));
 
 var app = builder.Build();
 
@@ -15,13 +21,20 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-builder.Services.AddDbContext<ESCORIALContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("EscorialPostgreSql")));
+app.MapGet("/", () => "Hello World!");
 
+app.MapPost("/api/login", async (LoginDto login, ESCORIALContext context) =>
+{
+    var user = await context.ud_empleado
+        .FirstOrDefaultAsync(u => u.usuario_sistema == login.User && u.password == login.Password);
+    if (user is null)
+        return Results.NotFound();
+    return Results.Ok();
+})
+.WithName("login")
+.WithOpenApi();
 
-var context = new ESCORIALContext();
-
-app.MapGet("api/pallets", async (string? numero) =>
+app.MapGet("api/pallets", async (string? numero, ESCORIALContext context) =>
 {
     if (string.IsNullOrWhiteSpace(numero))
         return Results.BadRequest("El número de pallet es requerido");
@@ -35,7 +48,7 @@ app.MapGet("api/pallets", async (string? numero) =>
 .WithName("getPallets")
 .WithOpenApi();
 
-app.MapGet("api/pallets/productos", async (string? numero) =>
+app.MapGet("api/pallets/productos", async (string? numero, ESCORIALContext context) =>
 {
     if (string.IsNullOrWhiteSpace(numero))
         return Results.BadRequest("El número de pallet es requerido");
@@ -70,7 +83,7 @@ app.MapGet("api/pallets/productos", async (string? numero) =>
 .WithName("getProductosByPallet")
 .WithOpenApi();
 
-app.MapGet("api/productos", async (string? tipo, int? numero) =>
+app.MapGet("api/productos", async (string? tipo, int? numero, ESCORIALContext context) =>
 {
     if (string.IsNullOrWhiteSpace(tipo))
         return Results.BadRequest("El tipo de producto es requerido");
@@ -103,7 +116,7 @@ app.MapGet("api/productos", async (string? tipo, int? numero) =>
 .WithName("getProductos")
 .WithOpenApi();
 
-app.MapGet("api/cocinas", async (int? numero) =>
+app.MapGet("api/cocinas", async (int? numero, ESCORIALContext context) =>
 {
     var query = context.etiquetas_maestro_cocinas.AsQueryable();
     if (numero.HasValue)
@@ -136,7 +149,7 @@ app.MapGet("api/cocinas", async (int? numero) =>
 .WithName("getCocinas")
 .WithOpenApi();
 
-app.MapGet("api/termos", async (int? numero) =>
+app.MapGet("api/termos", async (int? numero, ESCORIALContext context) =>
 {
     var query = context.etiquetas_maestro_termotanques.AsQueryable();
     if (numero.HasValue)
@@ -169,7 +182,7 @@ app.MapGet("api/termos", async (int? numero) =>
 .WithName("getTermos")
 .WithOpenApi();
 
-app.MapPost("api/pallets/asociar-productos", async (cenker_pallets pallet) =>
+app.MapPost("api/pallets/asociar-productos", async (cenker_pallets pallet, ESCORIALContext context) =>
 {
     var palletId = await context.cenker_pallets
         .FirstOrDefaultAsync(p => p.codigo == pallet.codigo);
