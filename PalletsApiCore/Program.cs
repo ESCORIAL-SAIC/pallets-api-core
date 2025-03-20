@@ -203,57 +203,65 @@ app.MapGet("api/termos", async (int? numero, ESCORIALContext context) =>
 
 app.MapPost("api/pallets/asociar-productos", async (cenker_pallets pallet, ESCORIALContext context) =>
 {
-    var palletId = await context.cenker_pallets
-        .FirstOrDefaultAsync(p => p.codigo == pallet.codigo);
-    if (palletId is null)
-        return Results.NotFound();
-    var productos = pallet.Products;
-    var existentes = await context.cenker_prod_x_pallet
-        .Where(p => p.pallet_id == palletId.id)
-        .ToListAsync();
-    foreach (var item in existentes)
-    {
-        context.cenker_prod_x_pallet.Remove(item);
-    }
-    foreach (var item in productos)
-    {
-        var pXp = new cenker_prod_x_pallet
-        {
-            id = Guid.NewGuid(),
-            pallet_id = palletId.id,
-            producto_id = item.productId,
-            activo = true,
-            fecha_alta = DateTime.Now.ToString(),
-            fecha_modificacion = DateTime.Now.ToString(),
-            serie = item.serial.ToString()
-        };
-        context.cenker_prod_x_pallet.Add(pXp);
-        var auditoria = new cenker_pallets_auditoria
-        {
-            id = Guid.NewGuid(),
-            fecha = DateTime.Now,
-            evento = "ASOCIAR PRODUCTO",
-            objeto = "web.cenker_prod_x_pallet",
-            elemento_asociado = pXp.id,
-            valor_anterior = string.Empty,
-            valor_actual = pXp.serie,
-            usuario = pallet.Usuario
-        };
-        context.cenker_pallets_auditoria.Add(auditoria);
-    }
+    await using var transaction = await context.Database.BeginTransactionAsync();
+
     try
     {
-        await using var transaction = await context.Database.BeginTransactionAsync();
+        var palletId = await context.cenker_pallets
+            .FirstOrDefaultAsync(p => p.codigo == pallet.codigo);
+        if (palletId is null)
+            return Results.NotFound();
+
+        var productos = pallet.Products;
+
+        var existentes = await context.cenker_prod_x_pallet
+            .Where(p => p.pallet_id == palletId.id)
+            .ToListAsync();
+
+        context.cenker_prod_x_pallet.RemoveRange(existentes);
+
+        foreach (var item in productos)
+        {
+            var pXp = new cenker_prod_x_pallet
+            {
+                id = Guid.NewGuid(),
+                pallet_id = palletId.id,
+                producto_id = item.productId,
+                activo = true,
+                fecha_alta = DateTime.Now.ToString(),
+                fecha_modificacion = DateTime.Now.ToString(),
+                serie = item.serial.ToString()
+            };
+            context.cenker_prod_x_pallet.Add(pXp);
+
+            var auditoria = new cenker_pallets_auditoria
+            {
+                id = Guid.NewGuid(),
+                fecha = DateTime.Now,
+                evento = "ASOCIAR PRODUCTO",
+                objeto = "web.cenker_prod_x_pallet",
+                elemento_asociado = pXp.id,
+                valor_anterior = string.Empty,
+                valor_actual = pXp.serie,
+                usuario = pallet.Usuario
+            };
+            context.cenker_pallets_auditoria.Add(auditoria);
+        }
+
         await context.SaveChangesAsync();
         await transaction.CommitAsync();
+
         return Results.NoContent();
     }
     catch (Exception)
     {
-        await context.Database.RollbackTransactionAsync();
+        await transaction.RollbackAsync();
         return Results.BadRequest();
     }
-});
+})
+.WithName("asociarProductos")
+.WithOpenApi();
+
 
 
 

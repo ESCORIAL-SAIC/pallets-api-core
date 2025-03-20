@@ -9,7 +9,7 @@ namespace PalletsApiCore.Models
         [Key]
         [Column("id")]
         public Guid id { get; set; }
-        [Column("fecha")]
+        [Column("fecha", TypeName = "timestamp without time zone")]
         public DateTime fecha { get; set; }
         [Column("evento", TypeName = "character varying")]
         public string evento { get; set; }
