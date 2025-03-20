@@ -207,10 +207,16 @@ app.MapPost("api/pallets/asociar-productos", async (cenker_pallets pallet, ESCOR
 
     try
     {
+        if (string.IsNullOrEmpty(pallet.codigo))
+            return Results.BadRequest("El código de pallet es requerido.");
+        if (pallet.Products.Count < 1)
+            return Results.BadRequest("No hay productos para asociar.");
+
         var palletId = await context.cenker_pallets
             .FirstOrDefaultAsync(p => p.codigo == pallet.codigo);
+
         if (palletId is null)
-            return Results.NotFound();
+            return Results.NotFound("No se encontró el pallet.");
 
         var productos = pallet.Products;
 
@@ -218,10 +224,12 @@ app.MapPost("api/pallets/asociar-productos", async (cenker_pallets pallet, ESCOR
             .Where(p => p.pallet_id == palletId.id)
             .ToListAsync();
 
-        context.cenker_prod_x_pallet.RemoveRange(existentes);
-
         foreach (var item in productos)
         {
+            var exists = existentes
+                .FirstOrDefault(e => e.serie == item.serial.ToString()) is not null;
+            if (exists)
+                continue;
             var pXp = new cenker_prod_x_pallet
             {
                 id = Guid.NewGuid(),
@@ -256,13 +264,21 @@ app.MapPost("api/pallets/asociar-productos", async (cenker_pallets pallet, ESCOR
     catch (Exception)
     {
         await transaction.RollbackAsync();
-        return Results.BadRequest();
+        return Results.BadRequest("Se produjo una excepción no controlada. Los cambios no se guardarán.");
+    }
+    finally
+    {
+        transaction.Dispose();
     }
 })
 .WithName("asociarProductos")
 .WithOpenApi();
 
+app.MapPost("api/pallets/desasociar-productos", async (cenker_pallets pallet, ESCORIALContext context) =>
+{
 
-
+})
+.WithName("desasociarProductos")
+.WithOpenApi();
 
 await app.RunAsync();
