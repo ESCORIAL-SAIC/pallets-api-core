@@ -23,7 +23,11 @@ public partial class cenker_pallets
 
     [Column(TypeName = "character varying")]
     public string fecha_alta { get; set; }
+
     [NotMapped]
     public List<Product> Products { get; set; }
+    [NotMapped]
+    [JsonIgnore]
+    public string Usuario { get; set; } 
 
 }

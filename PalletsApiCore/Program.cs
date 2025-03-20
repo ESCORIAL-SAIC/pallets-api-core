@@ -228,6 +228,18 @@ app.MapPost("api/pallets/asociar-productos", async (cenker_pallets pallet, ESCOR
             serie = item.serial.ToString()
         };
         context.cenker_prod_x_pallet.Add(pXp);
+        var auditoria = new cenker_pallets_auditoria
+        {
+            id = Guid.NewGuid(),
+            fecha = DateTime.Now,
+            evento = "ASOCIAR PRODUCTO",
+            objeto = "web.cenker_prod_x_pallet",
+            elemento_asociado = pXp.id,
+            valor_anterior = string.Empty,
+            valor_actual = pXp.serie,
+            usuario = pallet.Usuario
+        };
+        context.cenker_pallets_auditoria.Add(auditoria);
     }
     try
     {
