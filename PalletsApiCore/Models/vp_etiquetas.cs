@@ -24,6 +24,6 @@ public partial class vp_etiquetas
 
     public bool? ingreso_stock { get; set; }
 
-    [Column(TypeName = "timestamp without time zone")]
+    [Column("fecha_paso_lector", TypeName = "timestamp without time zone")]
     public DateTime? fecha_paso_lector { get; set; }
 }

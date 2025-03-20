@@ -147,7 +147,7 @@ public partial class ESCORIALContext : DbContext
             entity.ToView("vp_etiquetas");
         });
 
-        modelBuilder.Entity<vp_etiquetas>(entity =>
+        modelBuilder.Entity<v_persona>(entity =>
         {
             entity.ToView("v_persona");
         });
