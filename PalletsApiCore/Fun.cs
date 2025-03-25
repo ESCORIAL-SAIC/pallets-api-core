@@ -8,10 +8,9 @@ namespace PalletsApiCore
 
         public static async Task<bool> IsAvailableAsync(int serial, ESCORIALContext context)
         {
-            var item = await context.cenker_prod_x_pallet
-                .FirstOrDefaultAsync(c => c.serie == serial.ToString());
-            var available = item is null;
-            return available;
+            var exists = await context.cenker_prod_x_pallet
+                .AnyAsync(c => c.serie == serial.ToString() && c.activo);
+            return !exists;
         }
     }
 }

@@ -27,7 +27,6 @@ public partial class cenker_pallets
     [NotMapped]
     public List<Product> Products { get; set; }
     [NotMapped]
-    [JsonIgnore]
     public string Usuario { get; set; } 
 
 }

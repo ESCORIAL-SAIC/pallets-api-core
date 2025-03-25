@@ -76,7 +76,7 @@ app.MapGet("api/pallets/productos", async (string? numero, ESCORIALContext conte
         .Select(cenker_pallets => cenker_pallets.id)
         .FirstOrDefaultAsync();
     var palletProducts = await context.cenker_prod_x_pallet
-        .Where(cenker_prod_x_pallet => cenker_prod_x_pallet.pallet_id == palletId)
+        .Where(cenker_prod_x_pallet => cenker_prod_x_pallet.pallet_id == palletId && cenker_prod_x_pallet.activo)
         .ToListAsync();
     var productos = new List<Product>();
     foreach (var item in palletProducts)
@@ -84,7 +84,7 @@ app.MapGet("api/pallets/productos", async (string? numero, ESCORIALContext conte
         var producto = await context.producto
             .FirstOrDefaultAsync(producto => producto.id == item.producto_id);
         var etiqueta = await context.vp_etiquetas
-            .FirstOrDefaultAsync(vp_etiquetas => vp_etiquetas.numero == int.Parse(item.serie));
+            .FirstOrDefaultAsync(vp_etiquetas => vp_etiquetas.numero == int.Parse(item.serie) && vp_etiquetas.producto_id == producto!.id);
         if (producto is not null)
             productos.Add(new Product
             {
@@ -218,16 +218,17 @@ app.MapPost("api/pallets/asociar-productos", async (cenker_pallets pallet, ESCOR
         if (palletId is null)
             return Results.NotFound("No se encontró el pallet.");
 
-        var productos = pallet.Products;
+        var productosAsociar = pallet.Products.Where(p => !p.deleted);
+        var productosDesasociar = pallet.Products.Where(p => p.deleted);
 
         var existentes = await context.cenker_prod_x_pallet
             .Where(p => p.pallet_id == palletId.id)
             .ToListAsync();
 
-        foreach (var item in productos)
+        foreach (var item in productosAsociar)
         {
             var exists = existentes
-                .FirstOrDefault(e => e.serie == item.serial.ToString()) is not null;
+                .FirstOrDefault(e => e.serie == item.serial.ToString() && e.activo) is not null;
             if (exists)
                 continue;
             var pXp = new cenker_prod_x_pallet
@@ -256,6 +257,28 @@ app.MapPost("api/pallets/asociar-productos", async (cenker_pallets pallet, ESCOR
             context.cenker_pallets_auditoria.Add(auditoria);
         }
 
+        foreach (var item in productosDesasociar)
+        {
+            var pXp = existentes
+                .FirstOrDefault(e => e.serie == item.serial.ToString() && e.activo);
+            if (pXp is null)
+                continue;
+            pXp.activo = false;
+            pXp.fecha_modificacion = DateTime.Now.ToString();
+            var auditoria = new cenker_pallets_auditoria
+            {
+                id = Guid.NewGuid(),
+                fecha = DateTime.Now,
+                evento = "DESASOCIAR PRODUCTO",
+                objeto = "web.cenker_prod_x_pallet",
+                elemento_asociado = pXp.id,
+                valor_anterior = pXp.serie,
+                valor_actual = string.Empty,
+                usuario = pallet.Usuario
+            };
+            context.cenker_pallets_auditoria.Add(auditoria);
+        }
+
         await context.SaveChangesAsync();
         await transaction.CommitAsync();
 
@@ -272,13 +295,6 @@ app.MapPost("api/pallets/asociar-productos", async (cenker_pallets pallet, ESCOR
     }
 })
 .WithName("asociarProductos")
-.WithOpenApi();
-
-app.MapPost("api/pallets/desasociar-productos", async (cenker_pallets pallet, ESCORIALContext context) =>
-{
-
-})
-.WithName("desasociarProductos")
 .WithOpenApi();
 
 await app.RunAsync();

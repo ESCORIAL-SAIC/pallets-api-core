@@ -10,6 +10,7 @@ namespace PalletsApiCore.Models
         public string description { get; set; }
         public string type { get; set; }
         public int maxCantByPallet { get; set; }
-        public bool? isAvailable { get; set; }
+        public bool isAvailable { get; set; }
+        public bool deleted { get; set; }
     }
 }

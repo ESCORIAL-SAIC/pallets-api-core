@@ -18,7 +18,7 @@ public partial class cenker_prod_x_pallet
 
     public Guid producto_id { get; set; }
 
-    public bool? activo { get; set; }
+    public bool activo { get; set; }
 
     [Column(TypeName = "character varying")]
     public string fecha_alta { get; set; }
