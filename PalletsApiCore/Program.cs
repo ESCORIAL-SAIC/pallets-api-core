@@ -21,7 +21,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapGet("/", () => "Hello World!");
+app.MapGet("/", () => Results.Ok("Hello World!"));
 
 app.MapPost("/api/login", async (LoginDto login, ESCORIALContext context) =>
 {
