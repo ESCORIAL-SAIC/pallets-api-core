@@ -46,9 +46,7 @@ app.MapPost("/api/login", async (LoginDto login, ESCORIALContext context) =>
             x.p.nombre
         })
         .FirstOrDefaultAsync();
-    if (user is null)
-        return Results.NotFound();
-    return Results.Ok(user);
+    return user is null ? Results.NotFound() : Results.Ok(user);
 })
 .WithName("login")
 .WithOpenApi();
@@ -60,9 +58,7 @@ app.MapGet("api/pallets", async (string? numero, ESCORIALContext context) =>
     var pallet = await context.cenker_pallets
         .Where(cenker_pallets => cenker_pallets.codigo == numero)
         .FirstOrDefaultAsync();
-    if (pallet is null)
-        return Results.NotFound();
-    return Results.Ok(pallet);
+    return pallet is null ? Results.NotFound() : Results.Ok(pallet);
 })
 .WithName("getPallets")
 .WithOpenApi();
@@ -161,9 +157,7 @@ app.MapGet("api/cocinas", async (int? numero, ESCORIALContext context) =>
     }
     if (numero.HasValue && productos.Count < 1)
         return Results.NotFound();
-    if (productos.Count == 1)
-        return Results.Ok(productos.FirstOrDefault());
-    return Results.Ok(productos);
+    return productos.Count == 1 ? Results.Ok(productos.FirstOrDefault()) : Results.Ok(productos);
 })
 .WithName("getCocinas")
 .WithOpenApi();
@@ -194,9 +188,7 @@ app.MapGet("api/termos", async (int? numero, ESCORIALContext context) =>
     }
     if (numero.HasValue && productos.Count < 1)
         return Results.NotFound();
-    if (productos.Count == 1)
-        return Results.Ok(productos.FirstOrDefault());
-    return Results.Ok(productos);
+    return productos.Count == 1 ? Results.Ok(productos.FirstOrDefault()) : Results.Ok(productos);
 })
 .WithName("getTermos")
 .WithOpenApi();
