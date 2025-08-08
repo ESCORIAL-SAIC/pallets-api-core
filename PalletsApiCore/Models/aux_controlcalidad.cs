@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿#nullable disable
+
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PalletsApiCore.Models
@@ -7,11 +9,15 @@ namespace PalletsApiCore.Models
     public partial class aux_controlcalidad
     {
         [Key]
+        public Guid id { get; set; }
+        public Guid puestocontrol_id { get; set; }
+        public string puestocontrol_n { get; set; }
         public int etiqueta { get; set; }
-        public Guid reparador_empleado_id{ get; set; }
-        public string reparador_empleado_n { get; set; }
-        public bool reparador_estado { get; set; }
-        public Guid reparador_falla_id { get; set; }
-        public string reparador_falla_n { get; set; }
+        public DateTime controlador_fechahora { get; set; }
+        public Guid controlador_empleado_id { get; set; }
+        public string controlador_empleado_n { get; set; }
+        public bool controlador_estado { get; set; }
+        public Guid secundario_emplado_id { get; set; }
+        public string secundario_emplado_n { get; set; }
     }
 }

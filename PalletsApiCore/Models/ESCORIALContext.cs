@@ -37,6 +37,8 @@ public partial class ESCORIALContext : DbContext
 
     public virtual DbSet<cenker_pallets_auditoria> cenker_pallets_auditoria { get; set; }
 
+    public virtual DbSet<aux_controlcalidad> aux_controlcalidad { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -102,6 +104,13 @@ public partial class ESCORIALContext : DbContext
         {
             entity.HasKey(e => e.id).HasName("empleado_pkey");
             entity.Property(e => e.id).ValueGeneratedNever();
+        });
+
+        modelBuilder.Entity<aux_controlcalidad>(entity =>
+        {
+            entity.Property(e => e.etiqueta).ValueGeneratedNever();
+            entity.Property(e => e.reparador_empleado_n).HasMaxLength(100);
+            entity.Property(e => e.reparador_falla_n).HasMaxLength(100);
         });
 
         modelBuilder.Entity<producto>(entity =>
