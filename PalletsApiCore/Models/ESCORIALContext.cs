@@ -109,8 +109,6 @@ public partial class ESCORIALContext : DbContext
         modelBuilder.Entity<aux_controlcalidad>(entity =>
         {
             entity.Property(e => e.etiqueta).ValueGeneratedNever();
-            entity.Property(e => e.reparador_empleado_n).HasMaxLength(100);
-            entity.Property(e => e.reparador_falla_n).HasMaxLength(100);
         });
 
         modelBuilder.Entity<producto>(entity =>
