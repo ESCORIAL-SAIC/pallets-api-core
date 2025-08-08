@@ -247,6 +247,17 @@ app.MapPost("api/pallets/asociar-productos", async (cenker_pallets pallet, ESCOR
                 usuario = pallet.Usuario
             };
             context.cenker_pallets_auditoria.Add(auditoria);
+
+            if (item.type == "TERMOTANQUE")
+            {
+                var etiqueta = await context.etiquetas_maestro_termotanques
+                    .FirstOrDefaultAsync(e => e.numero == item.serial);
+                if (etiqueta is not null)
+                {
+                    etiqueta.paso_lector = true;
+                    etiqueta.fecha_paso_lector = DateTime.Now;
+                }
+            }
         }
 
         foreach (var item in productosDesasociar)
