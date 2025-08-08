@@ -272,6 +272,7 @@ app.MapPost("api/pallets/asociar-productos", async (cenker_pallets pallet, ESCOR
                         controlador_empleado_n = pallet.Usuario,
                         controlador_estado = true
                     };
+                    context.aux_controlcalidad.Add(control);
                 }
             }
         }
