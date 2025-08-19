@@ -247,34 +247,6 @@ app.MapPost("api/pallets/asociar-productos", async (cenker_pallets pallet, ESCOR
                 usuario = pallet.Usuario
             };
             context.cenker_pallets_auditoria.Add(auditoria);
-
-            // control final
-            if (item.type == "TERMOTANQUE")
-            {
-                var etiqueta = await context.etiquetas_maestro_termotanques
-                    .FirstOrDefaultAsync(e => e.numero == item.serial);
-                var ud = await context.ud_empleado
-                    .FirstOrDefaultAsync(u => u.usuario_sistema == pallet.Usuario);
-                var usuario = await context.empleado
-                    .FirstOrDefaultAsync(e => e.boextension_id == ud!.id);
-                if (etiqueta is not null && usuario is not null)
-                {
-                    etiqueta.paso_lector = true;
-                    etiqueta.fecha_paso_lector = DateTime.Now;
-                    var control = new aux_controlcalidad
-                    {
-                        id = new Guid(),
-                        puestocontrol_id = Guid.Parse("a82c68a6-3d92-4332-9d37-e18cf6b3f09e"),
-                        puestocontrol_n = "Control Final",
-                        etiqueta = item.serial,
-                        controlador_fechahora = DateTime.Now,
-                        controlador_empleado_id = usuario.id,
-                        controlador_empleado_n = pallet.Usuario,
-                        controlador_estado = true
-                    };
-                    context.aux_controlcalidad.Add(control);
-                }
-            }
         }
 
         foreach (var item in productosDesasociar)
